@@ -1,0 +1,49 @@
+name: build-and-deploy
+
+on:
+  schedule:
+    # 与主站同节奏：UTC 23:30 收盘行情批次、UTC 15:30 备用批次（并推进历史回填）
+    - cron: "30 23 * * *"
+    - cron: "30 15 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 构建数据（快照 + 回填批次 + 聚合）
+        run: python3 build.py
+
+      - name: 提交累积数据回仓库
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data public/data
+          git diff --cached --quiet || git commit -m "data: $(date -u +%FT%H:%MZ)"
+          git pull --rebase origin main || true
+          git push
+
+      - name: 上传站点产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: 部署到 GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

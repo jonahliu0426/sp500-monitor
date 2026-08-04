@@ -1,0 +1,85 @@
+/* 标普500 成分股面板 — 与主站同源的设计变量（深色默认 + 浅色档） */
+:root {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --surface-2: #232322;
+  --ink: #ffffff; --ink2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,0.10);
+  --s1: #3987e5; --s2: #d95926; --s3: #199e70;
+  --good: #0ca30c; --warn: #fab219; --crit-soft: #e66767;
+  font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --surface-2: #f0efec;
+  --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,0.10);
+  --s1: #2a78d6; --s2: #eb6834; --s3: #1baf7a; --crit-soft: #e34948;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--page); color: var(--ink2); }
+
+header {
+  display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  padding: 14px 22px; border-bottom: 1px solid var(--border);
+  background: var(--surface); position: sticky; top: 0; z-index: 20;
+}
+header h1 { margin: 0; font-size: 17px; color: var(--ink); }
+header .sub { font-size: 12px; color: var(--muted); }
+header .home { margin-left: auto; font-size: 12.5px; color: var(--s1); text-decoration: none; }
+header .home:hover { text-decoration: underline; }
+
+main { padding: 18px 22px 70px; max-width: 1280px; margin: 0 auto; }
+
+.agg-row { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(210px, 100%), 1fr)); margin-bottom: 16px; }
+.agg {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 12px 16px 10px;
+}
+.agg .a-label { font-size: 11.5px; color: var(--muted); }
+.agg .a-value { font-size: 24px; font-weight: 650; color: var(--ink); margin-top: 3px; }
+.agg .a-sub { font-size: 11.5px; color: var(--muted); margin-top: 2px; min-height: 15px; }
+.agg svg.spark { width: 100%; height: 34px; display: block; margin-top: 6px; }
+
+.sec-grid { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(min(160px, 100%), 1fr)); margin: 4px 0 18px; }
+.sec-cell {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 9px 12px; font-size: 12.5px;
+}
+.sec-cell .s-name { color: var(--ink); font-weight: 600; }
+.sec-cell .s-line { color: var(--muted); font-size: 11.5px; margin-top: 3px; }
+.sec-cell .pos { color: var(--good); } .sec-cell .neg { color: var(--crit-soft); }
+
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin: 6px 0 10px; }
+.toolbar input, .toolbar select {
+  background: var(--surface-2); color: var(--ink); border: 1px solid var(--border);
+  border-radius: 8px; padding: 7px 12px; font-size: 13px; outline: none;
+}
+.toolbar input { width: 240px; max-width: 60vw; }
+.toolbar .hint { font-size: 11.5px; color: var(--muted); }
+
+.tbl-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+table { border-collapse: collapse; width: 100%; font-size: 12.8px; min-width: 760px; }
+th, td { text-align: right; padding: 7px 12px; border-bottom: 1px solid var(--grid); white-space: nowrap; }
+th:first-child, td:first-child, th:nth-child(2), td:nth-child(2), th:nth-child(3), td:nth-child(3) { text-align: left; }
+th { color: var(--muted); font-weight: 500; font-size: 11.5px; position: sticky; top: 0; background: var(--surface); cursor: pointer; user-select: none; }
+th:hover { color: var(--ink); }
+th .arrow { font-size: 9px; }
+td { color: var(--ink2); font-variant-numeric: tabular-nums; }
+td.sym { color: var(--ink); font-weight: 600; }
+td.name { max-width: 260px; overflow: hidden; text-overflow: ellipsis; }
+td.pos { color: var(--good); } td.neg { color: var(--crit-soft); }
+tr:last-child td { border-bottom: none; }
+
+.foot { margin-top: 16px; font-size: 11.5px; color: var(--muted); line-height: 1.7; }
+.foot a { color: var(--muted); }
+
+#theme-toggle, #lang-toggle {
+  position: fixed; left: 14px; z-index: 40;
+  background: var(--surface-2); color: var(--ink2);
+  border: 1px solid var(--border); border-radius: 999px;
+  padding: 7px 14px; font-size: 12.5px; cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.22); min-width: 104px; text-align: center;
+}
+#theme-toggle { bottom: 56px; } #lang-toggle { bottom: 14px; }
+#theme-toggle:hover, #lang-toggle:hover { border-color: var(--muted); color: var(--ink); }

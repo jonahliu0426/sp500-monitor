@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>标普500 成分股面板 — 集中度、宽度与全成分行情 | Weathertop</title>
+<meta name="description" content="标普500 全部成分股的每日行情、市值权重与市场内部结构：前十大权重集中度、上涨家数占比、板块内部宽度、52周位置，免费每日更新两次。">
+<link rel="canonical" href="https://stocks.weathertop.app/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Weathertop 市场信号监测">
+<meta property="og:title" content="标普500 成分股面板 — 集中度与市场内部结构">
+<meta property="og:description" content="500 只成分股行情、Top10 权重集中度、上涨占比与板块宽度，每日自动更新。">
+<meta property="og:url" content="https://stocks.weathertop.app/">
+<link rel="stylesheet" href="style.css">
+<link rel="icon" href="data:image/svg+xml,&lt;svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'&gt;&lt;text y='.9em' font-size='90'&gt;🧩&lt;/text&gt;&lt;/svg&gt;">
+<script>try{if(localStorage.getItem("sp5-theme")==="light")document.documentElement.dataset.theme="light";}catch(e){}</script>
+</head>
+<body>
+<header>
+  <h1 id="t-title">标普500 成分股面板</h1>
+  <span class="sub" id="t-sub">集中度 · 内部宽度 · 全成分行情</span>
+  <span class="sub" id="t-asof"></span>
+  <a class="home" href="https://weathertop.app/" id="t-home">← 主面板 weathertop.app</a>
+</header>
+<main>
+  <div class="agg-row" id="agg"></div>
+  <div class="sec-grid" id="sectors"></div>
+  <div class="toolbar">
+    <input id="q" type="search" placeholder="搜索代码或公司名…">
+    <select id="secfilter"></select>
+    <span class="hint" id="t-hint">点击表头排序 · 数据为最近收盘（EOD）</span>
+  </div>
+  <div class="tbl-wrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+  <div class="foot" id="t-foot"></div>
+</main>
+<button id="theme-toggle" type="button">☀️ 浅色</button>
+<button id="lang-toggle" type="button">EN · English</button>
+<script src="stocks.js"></script>
+</body>
+</html>
