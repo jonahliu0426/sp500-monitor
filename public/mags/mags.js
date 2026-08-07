@@ -12,15 +12,39 @@ const pctS = (v, d = 1) => (v == null ? "—" : (v > 0 ? "+" : "") + v.toFixed(d
 const cls = (v) => (v == null ? "" : v > 0.001 ? "pos" : v < -0.001 ? "neg" : "");
 let DATA = null, sortKey = "mcap", sortDesc = true;
 
-function line(dates, vals, color) {
-  if (!vals || vals.length < 2) return "";
+function ratioChart(container, dates, vals, color) {
+  /* 带坐标轴的迷你折线：按容器实际像素渲染（避免 viewBox 拉伸导致文字变形） */
+  if (!vals || vals.length < 2) { container.innerHTML = ""; return; }
+  const cs = getComputedStyle(document.documentElement);
+  const muted = cs.getPropertyValue("--muted").trim();
+  const grid = cs.getPropertyValue("--grid").trim();
+  const W = Math.max(320, container.clientWidth || 800), H = 170;
+  const padL = 44, padR = 14, padT = 10, padB = 22;
+  const iw = W - padL - padR, ih = H - padT - padB;
   const min = Math.min(...vals), max = Math.max(...vals), span = max - min || 1;
-  const pts = vals.map((v, i) =>
-    (i / (vals.length - 1) * 1000).toFixed(1) + "," + (6 + (1 - (v - min) / span) * 104).toFixed(1));
-  const lastY = (6 + (1 - (vals[vals.length - 1] - min) / span) * 104).toFixed(1);
-  return `<svg viewBox="0 0 1000 120" preserveAspectRatio="none">` +
-    `<polyline points="${pts.join(" ")}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/>` +
-    `<circle cx="1000" cy="${lastY}" r="3.5" fill="${color}"/></svg>`;
+  const X = (i) => padL + i / (vals.length - 1) * iw;
+  const Y = (v) => padT + (1 - (v - min) / span) * ih;
+  let s = `<svg width="${W}" height="${H}" style="display:block">`;
+  // 纵轴：比值刻度（低/中/高）+ 网格线
+  [min, (min + max) / 2, max].forEach((v) => {
+    const y = Y(v).toFixed(1);
+    s += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="${grid}" stroke-width="1"/>`;
+    s += `<text x="${padL - 6}" y="${+y + 3.5}" text-anchor="end" font-size="10.5" fill="${muted}">${v.toFixed(1)}</text>`;
+  });
+  // 横轴：约 5 个日期刻度（YYYY-MM）
+  const nTicks = Math.min(5, dates.length);
+  for (let t = 0; t < nTicks; t++) {
+    const i = Math.round(t * (dates.length - 1) / (nTicks - 1));
+    const anchor = t === 0 ? "start" : t === nTicks - 1 ? "end" : "middle";
+    s += `<text x="${X(i).toFixed(1)}" y="${H - 7}" text-anchor="${anchor}" font-size="10.5" fill="${muted}">${dates[i].slice(0, 7)}</text>`;
+  }
+  const pts = vals.map((v, i) => X(i).toFixed(1) + "," + Y(v).toFixed(1)).join(" ");
+  s += `<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2"/>`;
+  const lastX = X(vals.length - 1).toFixed(1), lastY = Y(vals[vals.length - 1]).toFixed(1);
+  s += `<circle cx="${lastX}" cy="${lastY}" r="3.5" fill="${color}"/>`;
+  s += `<text x="${+lastX - 6}" y="${+lastY - 7}" text-anchor="end" font-size="10.5" font-weight="600" fill="${muted}">${vals[vals.length - 1].toFixed(1)}</text>`;
+  s += "</svg>";
+  container.innerHTML = s;
 }
 
 function corrLabel(c) {
@@ -50,8 +74,13 @@ function renderAgg() {
     `<div class="agg"><div class="a-label">${c.l}</div><div class="a-value">${c.v}</div>` +
     `<div class="a-sub">${c.sub}</div></div>`).join("");
   const c1 = cs.getPropertyValue("--s1").trim();
-  $("#ratio").innerHTML = line(DATA.ratio.dates, DATA.ratio.vals, c1);
+  ratioChart($("#ratio"), DATA.ratio.dates, DATA.ratio.vals, c1);
 }
+let _rsz;
+window.addEventListener("resize", () => {
+  clearTimeout(_rsz);
+  _rsz = setTimeout(() => { if (DATA) renderAgg(); }, 200);
+});
 
 const COLS = () => [
   { k: "s", t: L("代码", "Ticker") },
