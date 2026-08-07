@@ -33,6 +33,21 @@ NASDAQ_HEADERS = ["-A", UA, "-H", "Accept: application/json",
 BACKFILL_PER_RUN = 25
 
 
+def market_date():
+    """快照应标注的美东市场日：开盘前(<9:30 ET)数据是上一交易日的收盘，
+    回退一天；周末回退到周五。修复延迟跨 UTC 午夜的批次把收盘价标成
+    次日的错位 bug。"""
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    now = datetime.now(ZoneInfo("America/New_York"))
+    d = now.date()
+    if now.hour < 9 or (now.hour == 9 and now.minute < 30):
+        d -= timedelta(days=1)
+    while d.weekday() >= 5:
+        d -= timedelta(days=1)
+    return d
+
+
 def http_get(url, extra_args=None, timeout=40):
     cmd = ["curl", "-sS", "-f", "--compressed", "--max-time", str(timeout),
            "--config", "-"] + (extra_args or [])
@@ -160,8 +175,8 @@ def fetch_snapshot(constituents):
 
 
 def save_snapshot(snap):
-    """落盘当日快照并清理：近90天保留每日，更早仅保留周五。"""
-    today = date.today().isoformat()
+    """按美东市场日落盘快照并清理：近90天保留每日，更早仅保留周五。"""
+    today = market_date().isoformat()
     with open(os.path.join(SNAP_DIR, today + ".json"), "w") as f:
         json.dump({"date": today,
                    "rows": [[s, v["px"], v["chg"], v["mcap"]] for s, v in sorted(snap.items())]},
@@ -309,7 +324,7 @@ def build_site_data(constituents, snap, backfilled):
                       "chg": v["chg"], "mcap": round(v["mcap"] / 1e9, 1),
                       "w": round(v["mcap"] / total_mcap * 100, 2),
                       "d52": hist_52w_dist(s, snap)})
-    out = {"asof": date.today().isoformat(),
+    out = {"asof": market_date().isoformat(),
            "updated_at": int(time.time()),
            "agg": {"n": len(snap), "adv_pct": round(adv_pct, 1),
                    "top10_w": round(top10_w, 1),

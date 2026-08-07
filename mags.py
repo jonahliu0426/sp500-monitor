@@ -95,7 +95,8 @@ _OCC = re.compile(r"^[A-Z.]{1,6}(\d{6})([CP])(\d{8})$")
 
 def fetch_opt_metrics(sym):
     """Cboe 延迟期权链 → P/C 比、ATM IV30。官方 iv/delta 字段，无需自行反推。"""
-    url = "https://cdn.cboe.com/api/global/delayed_quotes/options/%s.json" % sym
+    url = ("https://cdn.cboe.com/api/global/delayed_quotes/options/%s.json"
+           % sym.replace("/", "."))  # Cboe 对双类股用点号（BRK.B）
     d = json.loads(build.http_get(url, timeout=50))
     data = d.get("data") or {}
     opts = data.get("options") or []
@@ -144,7 +145,7 @@ def fetch_earnings(sym):
     """下次财报日期与盘前/盘后；未排期返回 None。"""
     try:
         obj = json.loads(build.http_get(
-            "https://api.nasdaq.com/api/analyst/%s/earnings-date" % sym,
+            "https://api.nasdaq.com/api/analyst/%s/earnings-date" % sym.replace("/", "%2F"),
             build.NASDAQ_HEADERS, timeout=25))
         txt = ((obj.get("data") or {}).get("reportText")) or ""
         m = re.search(r"on\s+(\d{2}/\d{2}/\d{4})", txt)
@@ -172,7 +173,7 @@ def _corr(a, b):
 
 def save_opt_day(metrics_by_sym):
     os.makedirs(OPT_DIR, exist_ok=True)
-    with open(os.path.join(OPT_DIR, date.today().isoformat() + ".json"), "w") as f:
+    with open(os.path.join(OPT_DIR, build.market_date().isoformat() + ".json"), "w") as f:
         json.dump(metrics_by_sym, f)
 
 
@@ -298,7 +299,7 @@ def run(constituents, snap):
     nearest = min((r["earn"]["days"], r["s"]) for r in rows
                   if r["earn"] and r["earn"]["days"] is not None and r["earn"]["days"] >= 0) \
         if any(r["earn"] and (r["earn"]["days"] or -1) >= 0 for r in rows) else None
-    out = {"asof": today.isoformat(), "updated_at": int(time.time()),
+    out = {"asof": build.market_date().isoformat(), "updated_at": int(time.time()),
            "regime": {"avg_corr": avg_corr, "dispersion": dispersion,
                       "mag_share": mag_share,
                       "next_earn": ({"sym": nearest[1], "days": nearest[0]} if nearest else None)},
