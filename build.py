@@ -332,6 +332,13 @@ def main():
     save_snapshot(snap)
     backfilled = backfill_batch(cons, snap)
     build_site_data(cons, snap, backfilled)
+    # MAG 面板：独立容错——期权/财报源故障不应阻断成分股面板的更新，
+    # 失败时保留仓库中上一版 mags.json（页面自带更新时间，陈旧可见）
+    try:
+        import mags
+        mags.run(cons, snap)
+    except Exception as e:
+        sys.stderr.write("⚠ MAG 面板生成失败（保留上一版数据）: %s\n" % e)
 
 
 if __name__ == "__main__":
