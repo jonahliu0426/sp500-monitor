@@ -95,7 +95,7 @@ _OCC = re.compile(r"^[A-Z.]{1,6}(\d{6})([CP])(\d{8})$")
 
 def fetch_opt_metrics(sym):
     """Cboe 延迟期权链 → P/C 比、ATM IV30。官方 iv/delta 字段，无需自行反推。"""
-    url = ("https://cdn.cboe.com/api/global/delayed_quotes/options/%s.json"
+    url = ("https://cdn-api.cboe.com/api/global/delayed_quotes/options/%s.json"
            % sym.replace("/", "."))  # Cboe 对双类股用点号（BRK.B）
     d = json.loads(build.http_get(url, timeout=50))
     data = d.get("data") or {}

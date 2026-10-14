@@ -49,7 +49,10 @@ def market_date():
 
 
 def http_get(url, extra_args=None, timeout=40):
-    cmd = ["curl", "-sS", "-f", "--compressed", "--max-time", str(timeout),
+    # -f 只对 4xx/5xx 报错：不跟随重定向时 3xx 会以退出码 0 返回 HTML 存根
+    # （2026-09 Cboe cdn.cboe.com → cdn-api.cboe.com 即如此），故必须 -L
+    cmd = ["curl", "-sS", "-f", "--compressed", "-L", "--max-redirs", "3",
+           "--proto-redir", "=https", "--max-time", str(timeout),
            "--config", "-"] + (extra_args or [])
     try:
         p = subprocess.run(cmd, capture_output=True, timeout=timeout + 15,
